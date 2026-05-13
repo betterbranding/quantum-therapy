@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quantum Therapy — Frequency Protocol Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #04040c;
+      --bg2: #080818;
+      --bg3: #0d0d28;
+      --cyan: #00f5ff;
+      --blue: #3b6eff;
+      --purple: #9b5de5;
+      --magenta: #f72585;
+      --text: #e8eaf6;
+      --muted: #8891b4;
+      --card: rgba(255,255,255,0.04);
+      --border: rgba(0,245,255,0.12);
+      --glow-cyan: 0 0 40px rgba(0,245,255,0.3);
+      --glow-blue: 0 0 40px rgba(59,110,255,0.3);
+      --glow-purple: 0 0 40px rgba(155,93,229,0.3);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ─── CANVAS BACKGROUND ─── */
+    #particles-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    section, nav, footer { position: relative; z-index: 1; }
+
+    /* ─── NAV ─── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 6vw;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      background: rgba(4,4,12,0.7);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo-img {
+      height: 44px;
+      width: auto;
+      display: block;
+      filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.4));
+    }
+    .footer-logo-img {
+      height: 52px;
+      width: auto;
+      display: block;
+      margin: 0 auto 1rem;
+      filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5));
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.12em;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      color: var(--bg);
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.4rem;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: all 0.3s;
+      box-shadow: 0 0 20px rgba(0,245,255,0.25);
+    }
+    .nav-cta:hover {
+      box-shadow: 0 0 35px rgba(0,245,255,0.5);
+      transform: translateY(-1px);
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 8rem 6vw 6rem;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,110,255,0.15) 0%, transparent 70%),
+                  radial-gradient(ellipse 60% 40% at 80% 80%, rgba(155,93,229,0.1) 0%, transparent 60%);
+    }
+
+    .hero-eyebrow {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+
+    .hero-eyebrow span {
+      display: inline-block;
+      width: 32px;
+      height: 1px;
+      background: var(--cyan);
+      vertical-align: middle;
+      margin: 0 10px;
+      opacity: 0.7;
+    }
+
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 10vw, 8rem);
+      line-height: 0.95;
+      letter-spacing: 0.04em;
+      max-width: 14ch;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s forwards;
+    }
+
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--blue) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--muted);
+      max-width: 52ch;
+      margin-bottom: 2.8rem;
+      font-weight: 300;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.6s forwards;
+    }
+
+    .hero-sub strong { color: var(--text); font-weight: 500; }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.8s forwards;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      color: var(--bg);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 1rem 2.4rem;
+      border-radius: 50px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(0,245,255,0.3), 0 4px 20px rgba(0,0,0,0.4);
+      transition: all 0.3s;
+      display: inline-block;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 60px rgba(0,245,255,0.5), 0 4px 30px rgba(0,0,0,0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 1rem 2.4rem;
+      border-radius: 50px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-block;
+    }
+    .btn-ghost:hover {
+      border-color: rgba(0,245,255,0.4);
+      background: rgba(0,245,255,0.05);
+    }
+
+    .hero-badge {
+      margin-top: 3.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      opacity: 0;
+      animation: fadeUp 0.8s 1s forwards;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px;
+      background: var(--cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--cyan);
+      animation: pulse 2s infinite;
+    }
+
+    /* ─── WAVE DIVIDER ─── */
+    .wave {
+      width: 100%;
+      overflow: hidden;
+      line-height: 0;
+      transform: translateY(1px);
+    }
+    .wave svg { display: block; width: 100%; }
+
+    /* ─── SECTION COMMON ─── */
+    .section {
+      padding: 7rem 6vw;
+    }
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      line-height: 1;
+      letter-spacing: 0.03em;
+      margin-bottom: 1.2rem;
+    }
+    .section-body {
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 58ch;
+      font-weight: 300;
+      line-height: 1.8;
+    }
+    .section-body strong { color: var(--text); font-weight: 600; }
+
+    /* ─── AGITATE ─── */
+    .agitate {
+      background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+      text-align: center;
+    }
+    .agitate .section-body { margin: 0 auto 2rem; }
+    .pain-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 3rem;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .pain-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem 1.2rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+      position: relative;
+      transition: all 0.3s;
+    }
+    .pain-card::before {
+      content: '✗';
+      display: block;
+      font-size: 1.2rem;
+      color: var(--magenta);
+      margin-bottom: 0.5rem;
+    }
+    .pain-card:hover {
+      border-color: rgba(247,37,133,0.3);
+      background: rgba(247,37,133,0.05);
+    }
+
+    /* ─── SCIENCE / RIFE ─── */
+    .science {
+      background: var(--bg2);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5vw;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .science { grid-template-columns: 1fr; }
+    }
+    .science-visual {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .rife-ring {
+      width: min(380px, 80vw);
+      height: min(380px, 80vw);
+      border-radius: 50%;
+      border: 1px solid rgba(0,245,255,0.15);
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .rife-ring::before {
+      content: '';
+      position: absolute;
+      inset: 15px;
+      border-radius: 50%;
+      border: 1px solid rgba(59,110,255,0.2);
+      animation: spin 12s linear infinite;
+    }
+    .rife-ring::after {
+      content: '';
+      position: absolute;
+      inset: 35px;
+      border-radius: 50%;
+      border: 1px solid rgba(155,93,229,0.25);
+      animation: spin 8s linear infinite reverse;
+    }
+    .rife-center {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,245,255,0.2), rgba(59,110,255,0.1), transparent);
+      border: 1px solid rgba(0,245,255,0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+      box-shadow: 0 0 60px rgba(0,245,255,0.2), inset 0 0 40px rgba(0,245,255,0.05);
+    }
+    .rife-hz {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      color: var(--cyan);
+      letter-spacing: 0.1em;
+    }
+    .rife-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .orbit-dot {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan);
+    }
+    .od1 { top: 10px; left: 50%; transform: translateX(-50%); animation: orbitGlow 3s infinite; }
+    .od2 { bottom: 10px; right: 20%; animation: orbitGlow 3s 1s infinite; background: var(--purple); box-shadow: 0 0 12px var(--purple); }
+    .od3 { top: 40%; left: 10px; animation: orbitGlow 3s 2s infinite; background: var(--blue); box-shadow: 0 0 12px var(--blue); }
+
+    /* ─── HOW IT WORKS ─── */
+    .how {
+      background: var(--bg);
+      text-align: center;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 4rem;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.2rem 1.8rem;
+      position: relative;
+      transition: all 0.35s;
+    }
+    .step:hover {
+      border-color: rgba(0,245,255,0.25);
+      background: rgba(0,245,255,0.04);
+      transform: translateY(-4px);
+      box-shadow: var(--glow-cyan);
+    }
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 0.8rem;
+    }
+    .step h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.02em;
+    }
+    .step p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    /* ─── PROTOCOLS PREVIEW ─── */
+    .protocols {
+      background: var(--bg2);
+      text-align: center;
+    }
+    .protocol-tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.7rem;
+      margin-top: 2.5rem;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .tag {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 0.45rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: all 0.25s;
+      cursor: default;
+    }
+    .tag:hover {
+      background: rgba(0,245,255,0.07);
+      border-color: rgba(0,245,255,0.3);
+      color: var(--cyan);
+    }
+
+    /* ─── SOCIAL PROOF ─── */
+    .proof {
+      background: var(--bg3);
+      text-align: center;
+    }
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: left;
+    }
+    .testimonial {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+    .testimonial:hover {
+      border-color: rgba(155,93,229,0.3);
+      box-shadow: var(--glow-purple);
+    }
+    .stars {
+      color: var(--cyan);
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+    .testimonial p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.75;
+      font-weight: 300;
+      margin-bottom: 1.2rem;
+    }
+    .testimonial p strong { color: var(--text); }
+    .t-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      color: var(--text);
+    }
+    .t-role {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ─── PRICING ─── */
+    .pricing {
+      background: var(--bg);
+      text-align: center;
+    }
+    .pricing-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .price-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      text-align: left;
+      transition: all 0.3s;
+    }
+    .price-card.featured {
+      border-color: rgba(0,245,255,0.35);
+      background: linear-gradient(145deg, rgba(0,245,255,0.06), rgba(59,110,255,0.06));
+      box-shadow: var(--glow-cyan);
+      position: relative;
+    }
+    .price-card.featured::before {
+      content: 'MOST POPULAR';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      color: var(--bg);
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      padding: 0.3rem 1rem;
+      border-radius: 50px;
+    }
+    .price-card h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.3rem;
+    }
+    .price-amount {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem;
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+    .price-amount span { font-size: 1.5rem; vertical-align: top; margin-top: 0.6rem; display: inline-block; }
+    .price-period {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+    .price-features {
+      list-style: none;
+      margin-bottom: 2rem;
+    }
+    .price-features li {
+      font-size: 0.9rem;
+      color: var(--muted);
+      padding: 0.4rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .price-features li::before {
+      content: '→';
+      color: var(--cyan);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .price-features li.muted::before { color: var(--muted); content: '·'; }
+
+    /* ─── CTA SECTION ─── */
+    .cta-section {
+      background: radial-gradient(ellipse 100% 80% at 50% 50%, rgba(59,110,255,0.15) 0%, transparent 70%),
+                  var(--bg2);
+      text-align: center;
+      padding: 8rem 6vw;
+    }
+    .cta-section .section-title { font-size: clamp(3rem, 8vw, 6rem); }
+    .cta-section .section-body { margin: 1.5rem auto 2.5rem; text-align: center; }
+
+    .disclaimer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      padding: 0.4rem 1rem;
+      margin-top: 1.5rem;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 3rem 6vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.12em;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+    .footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--cyan); }
+    .footer-copy {
+      font-size: 0.75rem;
+      color: var(--muted);
+      max-width: 100%;
+      text-align: right;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.6); opacity: 0.5; }
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes orbitGlow {
+      0%, 100% { opacity: 0.5; transform: scale(0.8) translateX(-50%); }
+      50% { opacity: 1; transform: scale(1.2) translateX(-50%); }
+    }
+    @keyframes waveBar {
+      0%, 100% { height: 10px; }
+      50% { height: 40px; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── WAVEFORM DECORATION ─── */
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+    .waveform .bar {
+      width: 3px;
+      background: linear-gradient(180deg, var(--cyan), var(--blue));
+      border-radius: 3px;
+      animation: waveBar ease-in-out infinite;
+    }
+
+    /* ─── HEADPHONES CALLOUT ─── */
+    .headphones-callout {
+      background: linear-gradient(135deg, rgba(0,245,255,0.06), rgba(155,93,229,0.06));
+      border: 1px solid rgba(0,245,255,0.2);
+      border-radius: 16px;
+      padding: 2rem 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      max-width: 600px;
+      margin: 3rem auto 0;
+      text-align: left;
+    }
+    .headphones-icon {
+      font-size: 2.5rem;
+      flex-shrink: 0;
+    }
+    .headphones-callout h4 {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+      color: var(--cyan);
+    }
+    .headphones-callout p {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .btn-primary, .btn-ghost { text-align: center; }
+      footer { flex-direction: column; text-align: center; }
+      .footer-copy { text-align: center; }
+      .headphones-callout { flex-direction: column; text-align: center; }
+    }
+
+    /* Gradient line accent */
+    .gradient-line {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), var(--blue), var(--purple), transparent);
+      width: 100%;
+      opacity: 0.4;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Particle canvas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <img src="QuantumTherapy.png" alt="Quantum Therapy" class="nav-logo-img" />
+  <a href="https://quantumtherapy.manus.space/" class="nav-cta" target="_blank">Try It Free</a>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <p class="hero-eyebrow"><span></span> Royal Raymond Rife Frequency Protocols <span></span></p>
+  <h1>Your Body<br/>Runs On <span class="gradient-text">Frequency.</span></h1>
+  <p class="hero-sub">
+    Every cell in your body vibrates at a measurable frequency.<br/>
+    <strong>Science has known this for over a century.</strong><br/>
+    Now you can harness it — from the palm of your hand.
+  </p>
+  <div class="hero-actions">
+    <a href="https://quantumtherapy.manus.space/" class="btn-primary" target="_blank">Experience It Free</a>
+    <a href="#science" class="btn-ghost">See The Science →</a>
+  </div>
+  <div class="hero-badge">
+    <div class="dot"></div>
+    Best experienced with stereo headphones for full binaural effect
+  </div>
+
+  <!-- Animated waveform -->
+  <div class="waveform" style="margin-top: 4rem;">
+    <div class="bar" style="height:8px; animation-duration:1.1s; animation-delay:0s;"></div>
+    <div class="bar" style="height:20px; animation-duration:0.9s; animation-delay:0.1s;"></div>
+    <div class="bar" style="height:35px; animation-duration:1.3s; animation-delay:0.2s;"></div>
+    <div class="bar" style="height:18px; animation-duration:0.8s; animation-delay:0.3s;"></div>
+    <div class="bar" style="height:42px; animation-duration:1.0s; animation-delay:0.4s;"></div>
+    <div class="bar" style="height:28px; animation-duration:1.4s; animation-delay:0.5s;"></div>
+    <div class="bar" style="height:50px; animation-duration:0.7s; animation-delay:0.6s;"></div>
+    <div class="bar" style="height:32px; animation-duration:1.2s; animation-delay:0.7s;"></div>
+    <div class="bar" style="height:44px; animation-duration:0.9s; animation-delay:0.8s;"></div>
+    <div class="bar" style="height:22px; animation-duration:1.1s; animation-delay:0.9s;"></div>
+    <div class="bar" style="height:38px; animation-duration:1.3s; animation-delay:1.0s;"></div>
+    <div class="bar" style="height:16px; animation-duration:0.8s; animation-delay:1.1s;"></div>
+    <div class="bar" style="height:50px; animation-duration:1.0s; animation-delay:1.2s;"></div>
+    <div class="bar" style="height:28px; animation-duration:1.4s; animation-delay:1.3s;"></div>
+    <div class="bar" style="height:36px; animation-duration:0.7s; animation-delay:1.4s;"></div>
+    <div class="bar" style="height:12px; animation-duration:1.2s; animation-delay:1.5s;"></div>
+    <div class="bar" style="height:45px; animation-duration:0.9s; animation-delay:1.6s;"></div>
+    <div class="bar" style="height:26px; animation-duration:1.1s; animation-delay:1.7s;"></div>
+    <div class="bar" style="height:39px; animation-duration:1.3s; animation-delay:1.8s;"></div>
+    <div class="bar" style="height:18px; animation-duration:0.8s; animation-delay:1.9s;"></div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- ─── AGITATE ─── -->
+<section class="section agitate reveal" id="agitate">
+  <p class="section-label">The problem</p>
+  <h2 class="section-title">You've Been<br/>Looking In The<br/><span style="background: linear-gradient(135deg, var(--magenta), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Wrong Place.</span></h2>
+  <p class="section-body">
+    Conventional approaches treat symptoms at the surface level.<br/>
+    <strong>But symptoms are just frequencies out of resonance.</strong><br/>
+    What if the real intervention happens at the molecular level?
+  </p>
+
+  <div class="pain-grid">
+    <div class="pain-card">Temporary relief that never addresses the root cause</div>
+    <div class="pain-card">Waiting months for appointments that last 10 minutes</div>
+    <div class="pain-card">Treatments that mask signals your body is sending</div>
+    <div class="pain-card">No tools to take control of your own cellular environment</div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- ─── SCIENCE / RIFE ─── -->
+<section class="section science reveal" id="science">
+  <div class="science-visual">
+    <div class="rife-ring">
+      <div class="orbit-dot od1"></div>
+      <div class="orbit-dot od2"></div>
+      <div class="orbit-dot od3"></div>
+      <div class="rife-center">
+        <div class="rife-hz">528 Hz</div>
+        <div class="rife-label">Resonant Field</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="section-label">The Science</p>
+    <h2 class="section-title">The Rife<br/><span style="background: linear-gradient(135deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Discovery.</span></h2>
+    <p class="section-body" style="margin-bottom: 1.5rem;">
+      In the 1930s, Royal Raymond Rife discovered something that rocked the scientific world: <strong>every biological organism — every cell, every pathogen, every tissue — vibrates at a specific resonant frequency.</strong>
+    </p>
+    <p class="section-body" style="margin-bottom: 1.5rem;">
+      Apply the precise opposing frequency? The target structure undergoes <strong>resonant disintegration</strong> — the same principle that shatters a wine glass with a single sustained note.
+    </p>
+    <p class="section-body">
+      Modern quantum biology confirms what Rife pioneered: <strong>matter is frequency. Cells communicate via biophotons. The body's entire regulatory system operates on quantum-level electromagnetic signaling.</strong> Intervene at the frequency level — and you intervene at the source.
+    </p>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section class="section how reveal" id="how">
+  <p class="section-label">How It Works</p>
+  <h2 class="section-title">Three Steps.<br/>Infinite <span style="background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Protocols.</span></h2>
+  <p class="section-body" style="margin: 0 auto 1rem;">Built on Rife's original frequency research. Delivered as precise binaural beat sessions you can run anywhere.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Search Any Condition</h3>
+      <p>Type in a condition, symptom, or system. Access hundreds of documented Rife frequency protocols instantly.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Generate Your Session</h3>
+      <p>The app builds a precision binaural beat audio session covering the complete multi-frequency treatment cycle.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Listen & Let Physics Work</h3>
+      <p>Put on stereo headphones. The frequencies do the rest — targeting cellular resonance at the quantum level.</p>
+    </div>
+  </div>
+
+  <div class="headphones-callout reveal">
+    <div class="headphones-icon">🎧</div>
+    <div>
+      <h4>Stereo Headphones Required</h4>
+      <p>Binaural beats require separate audio input to each ear. Use dual headphones or earbuds for the full therapeutic frequency effect.</p>
+    </div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- ─── PROTOCOLS ─── -->
+<section class="section protocols reveal">
+  <p class="section-label">Protocols Available</p>
+  <h2 class="section-title">200+ Conditions.<br/><span style="background: linear-gradient(135deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">All Mapped.</span></h2>
+  <p class="section-body" style="margin: 0 auto;">
+    From chronic inflammation to neurological support. From immune response to metabolic balance. Rife's protocols cover the full spectrum of human biology.
+  </p>
+  <div class="protocol-tags">
+    <span class="tag">Arthritis</span>
+    <span class="tag">Insomnia</span>
+    <span class="tag">Fibromyalgia</span>
+    <span class="tag">Lyme Disease</span>
+    <span class="tag">Anxiety</span>
+    <span class="tag">Inflammation</span>
+    <span class="tag">Immune Support</span>
+    <span class="tag">Cancer Protocols</span>
+    <span class="tag">Sinusitis</span>
+    <span class="tag">Diabetes</span>
+    <span class="tag">Parasites</span>
+    <span class="tag">Cardiovascular</span>
+    <span class="tag">Depression</span>
+    <span class="tag">Headaches</span>
+    <span class="tag">Mold & Fungi</span>
+    <span class="tag">Skin Conditions</span>
+    <span class="tag">Musculoskeletal</span>
+    <span class="tag">Respiratory</span>
+    <span class="tag">Detox</span>
+    <span class="tag">Dental & Oral</span>
+    <span class="tag">Kidney</span>
+    <span class="tag">Eye & Ear</span>
+    <span class="tag">+ Many More</span>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- ─── SOCIAL PROOF ─── -->
+<section class="section proof reveal">
+  <p class="section-label">What People Are Saying</p>
+  <h2 class="section-title">Real People.<br/><span style="background: linear-gradient(135deg, var(--cyan), var(--magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Real Results.</span></h2>
+  <div class="testimonials">
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p>"I was skeptical at first. But after running the <strong>insomnia protocol</strong> three nights in a row with headphones, I slept deeper than I had in years. There's something genuinely different happening in my nervous system."</p>
+      <div class="t-name">Marcus T.</div>
+      <div class="t-role">Software Engineer, Austin TX</div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p>"The <strong>fibromyalgia protocol</strong> became part of my daily routine. I don't know how to explain it scientifically, but the frequency sessions have changed how I experience my body. The pain signals are quieter."</p>
+      <div class="t-name">Sandra L.</div>
+      <div class="t-role">Yoga Instructor, Portland OR</div>
+    </div>
+    <div class="testimonial">
+      <div class="stars">★★★★★</div>
+      <p>"As someone with a background in biophysics, I've followed Rife's research for years. <strong>This app is the most accessible implementation of his protocols I've ever found.</strong> Genuinely impressive work."</p>
+      <div class="t-name">Dr. K. Mehta</div>
+      <div class="t-role">Biophysicist, Research Consultant</div>
+    </div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- ─── PRICING ─── -->
+<section class="section pricing reveal" id="pricing">
+  <p class="section-label">Get Started</p>
+  <h2 class="section-title">Access The<br/><span style="background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Frequency.</span></h2>
+  <p class="section-body" style="margin: 0 auto 1rem;">Try it completely free. No credit card required.</p>
+
+  <div class="pricing-cards">
+    <div class="price-card">
+      <h3>Free</h3>
+      <div class="price-amount">$<span style="font-size:3.5rem">0</span></div>
+      <div class="price-period">Forever free</div>
+      <ul class="price-features">
+        <li>Access to popular protocols</li>
+        <li>5 sessions per month</li>
+        <li>Standard frequency sessions</li>
+        <li class="muted" style="opacity:0.4">Unlimited sessions</li>
+        <li class="muted" style="opacity:0.4">Full protocol library</li>
+        <li class="muted" style="opacity:0.4">Mobile app access</li>
+      </ul>
+      <a href="https://quantumtherapy.manus.space/" class="btn-ghost" style="display:block; text-align:center;" target="_blank">Start Free</a>
+    </div>
+
+    <div class="price-card featured">
+      <h3>Pro</h3>
+      <div class="price-amount"><span>$</span>9<span style="font-size:1.5rem">.99</span></div>
+      <div class="price-period">per month · cancel anytime</div>
+      <ul class="price-features">
+        <li>Unlimited sessions</li>
+        <li>Full protocol library (200+)</li>
+        <li>All condition categories</li>
+        <li>Mobile app access</li>
+        <li>New protocols added weekly</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="https://quantumtherapy.manus.space/" class="btn-primary" style="display:block; text-align:center;" target="_blank">Start Free Trial</a>
+    </div>
+  </div>
+</section>
+
+<div class="gradient-line"></div>
+
+<!-- ─── FINAL CTA ─── -->
+<section class="cta-section reveal">
+  <p class="section-label">The Future of Frequency</p>
+  <h2 class="section-title" style="font-family:'Bebas Neue',sans-serif; font-size:clamp(3rem,8vw,6rem); letter-spacing:0.03em; line-height:0.95; margin-bottom:0;">
+    Stop Waiting.<br/><span style="background: linear-gradient(135deg, var(--cyan), var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Start Resonating.</span>
+  </h2>
+  <p class="section-body" style="margin: 1.5rem auto 2.5rem; text-align:center;">
+    Your biology is already running the code. <strong>Quantum Therapy gives you access to the compiler.</strong> Thousands of protocols. Seconds to generate. Built for the palm of your hand.
+  </p>
+  <a href="https://quantumtherapy.manus.space/" class="btn-primary" target="_blank" style="font-size:1.1rem; padding: 1.1rem 3rem;">Experience It Free — No Card Needed</a>
+  <br/>
+  <div class="disclaimer-badge">
+    🔬 For experimental & educational use · Not a substitute for medical care
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <img src="QuantumTherapy.png" alt="Quantum Therapy" class="footer-logo-img" />
+  <ul class="footer-links">
+    <li><a href="#science">Science</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="https://quantumtherapy.manus.space/" target="_blank">Launch App</a></li>
+  </ul>
+  <p class="footer-copy">© 2026 Quantum Therapy. Based on Royal Raymond Rife's frequency research.<br/>For experimental & educational purposes only.</p>
+</footer>
+
+<!-- ─── JS ─── -->
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(r => io.observe(r));
+
+  // Particle canvas
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let W, H;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COLORS = ['rgba(0,245,255,', 'rgba(59,110,255,', 'rgba(155,93,229,'];
+
+  for (let i = 0; i < 80; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 1.5 + 0.3,
+      dx: (Math.random() - 0.5) * 0.3,
+      dy: (Math.random() - 0.5) * 0.3,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: Math.random() * 0.5 + 0.1
+    });
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + p.alpha + ')';
+      ctx.fill();
+      p.x += p.dx;
+      p.y += p.dy;
+      if (p.x < 0 || p.x > W) p.dx *= -1;
+      if (p.y < 0 || p.y > H) p.dy *= -1;
+    });
+
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(0,245,255,${0.04 * (1 - dist/120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+</script>
+
+</body>
+</html>
