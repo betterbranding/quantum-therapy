@@ -679,8 +679,8 @@
       50% { opacity: 1; transform: scale(1.2) translateX(-50%); }
     }
     @keyframes waveBar {
-      0%, 100% { height: 10px; }
-      50% { height: 40px; }
+      0%, 100% { transform: scaleY(0.2); }
+      50% { transform: scaleY(1); }
     }
 
     .reveal {
@@ -700,12 +700,16 @@
       gap: 3px;
       justify-content: center;
       margin: 2rem 0;
+      height: 60px;
     }
     .waveform .bar {
       width: 3px;
+      height: 100%;
       background: linear-gradient(180deg, var(--cyan), var(--blue));
       border-radius: 3px;
       animation: waveBar ease-in-out infinite;
+      transform-origin: center;
+      will-change: transform;
     }
 
     /* ─── HEADPHONES CALLOUT ─── */
@@ -876,7 +880,7 @@
 
 <!-- ─── NAV ─── -->
 <nav>
-  <img src="https://cdn.jsdelivr.net/gh/betterbranding/quantum-therapy@latest/QuantumTherapy.png" alt="Quantum Therapy" class="nav-logo-img" />
+  <img src="https://assets.cdn.filesafe.space/8LMHuLoIUmoeVdwTITeb/media/6a04f6b482125b9874d11126.png" alt="Quantum Therapy" class="nav-logo-img" />
   <a href="https://quantumtherapy.app/" class="nav-cta" target="_blank">Try It Free</a>
 </nav>
 
@@ -925,26 +929,26 @@
 
   <!-- Animated waveform -->
   <div class="waveform" style="margin-top: 4rem;">
-    <div class="bar" style="height:8px; animation-duration:1.1s; animation-delay:0s;"></div>
-    <div class="bar" style="height:20px; animation-duration:0.9s; animation-delay:0.1s;"></div>
-    <div class="bar" style="height:35px; animation-duration:1.3s; animation-delay:0.2s;"></div>
-    <div class="bar" style="height:18px; animation-duration:0.8s; animation-delay:0.3s;"></div>
-    <div class="bar" style="height:42px; animation-duration:1.0s; animation-delay:0.4s;"></div>
-    <div class="bar" style="height:28px; animation-duration:1.4s; animation-delay:0.5s;"></div>
-    <div class="bar" style="height:50px; animation-duration:0.7s; animation-delay:0.6s;"></div>
-    <div class="bar" style="height:32px; animation-duration:1.2s; animation-delay:0.7s;"></div>
-    <div class="bar" style="height:44px; animation-duration:0.9s; animation-delay:0.8s;"></div>
-    <div class="bar" style="height:22px; animation-duration:1.1s; animation-delay:0.9s;"></div>
-    <div class="bar" style="height:38px; animation-duration:1.3s; animation-delay:1.0s;"></div>
-    <div class="bar" style="height:16px; animation-duration:0.8s; animation-delay:1.1s;"></div>
-    <div class="bar" style="height:50px; animation-duration:1.0s; animation-delay:1.2s;"></div>
-    <div class="bar" style="height:28px; animation-duration:1.4s; animation-delay:1.3s;"></div>
-    <div class="bar" style="height:36px; animation-duration:0.7s; animation-delay:1.4s;"></div>
-    <div class="bar" style="height:12px; animation-duration:1.2s; animation-delay:1.5s;"></div>
-    <div class="bar" style="height:45px; animation-duration:0.9s; animation-delay:1.6s;"></div>
-    <div class="bar" style="height:26px; animation-duration:1.1s; animation-delay:1.7s;"></div>
-    <div class="bar" style="height:39px; animation-duration:1.3s; animation-delay:1.8s;"></div>
-    <div class="bar" style="height:18px; animation-duration:0.8s; animation-delay:1.9s;"></div>
+    <div class="bar" style="animation-duration:1.1s; animation-delay:0s;"></div>
+    <div class="bar" style="animation-duration:0.9s; animation-delay:0.1s;"></div>
+    <div class="bar" style="animation-duration:1.3s; animation-delay:0.2s;"></div>
+    <div class="bar" style="animation-duration:0.8s; animation-delay:0.3s;"></div>
+    <div class="bar" style="animation-duration:1.0s; animation-delay:0.4s;"></div>
+    <div class="bar" style="animation-duration:1.4s; animation-delay:0.5s;"></div>
+    <div class="bar" style="animation-duration:0.7s; animation-delay:0.6s;"></div>
+    <div class="bar" style="animation-duration:1.2s; animation-delay:0.7s;"></div>
+    <div class="bar" style="animation-duration:0.9s; animation-delay:0.8s;"></div>
+    <div class="bar" style="animation-duration:1.1s; animation-delay:0.9s;"></div>
+    <div class="bar" style="animation-duration:1.3s; animation-delay:1.0s;"></div>
+    <div class="bar" style="animation-duration:0.8s; animation-delay:1.1s;"></div>
+    <div class="bar" style="animation-duration:1.0s; animation-delay:1.2s;"></div>
+    <div class="bar" style="animation-duration:1.4s; animation-delay:1.3s;"></div>
+    <div class="bar" style="animation-duration:0.7s; animation-delay:1.4s;"></div>
+    <div class="bar" style="animation-duration:1.2s; animation-delay:1.5s;"></div>
+    <div class="bar" style="animation-duration:0.9s; animation-delay:1.6s;"></div>
+    <div class="bar" style="animation-duration:1.1s; animation-delay:1.7s;"></div>
+    <div class="bar" style="animation-duration:1.3s; animation-delay:1.8s;"></div>
+    <div class="bar" style="animation-duration:0.8s; animation-delay:1.9s;"></div>
   </div>
 </section>
 
@@ -1183,7 +1187,7 @@
 
 <!-- ─── FOOTER ─── -->
 <footer>
-  <img src="https://cdn.jsdelivr.net/gh/betterbranding/quantum-therapy@latest/QuantumTherapy.png" alt="Quantum Therapy" class="footer-logo-img" />
+  <img src="https://assets.cdn.filesafe.space/8LMHuLoIUmoeVdwTITeb/media/6a04f6b482125b9874d11126.png" alt="Quantum Therapy" class="footer-logo-img" />
   <ul class="footer-links">
     <li><a href="#science">Science</a></li>
     <li><a href="#how">How It Works</a></li>
