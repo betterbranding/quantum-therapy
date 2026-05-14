@@ -642,8 +642,15 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+    .footer-links-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      align-items: flex-end;
+    }
     .footer-links {
       display: flex;
+      flex-wrap: wrap;
       gap: 1.5rem;
       list-style: none;
     }
@@ -860,6 +867,8 @@
       .btn-primary, .btn-ghost { text-align: center; }
       footer { flex-direction: column; text-align: center; }
       .footer-copy { text-align: center; }
+      .footer-links-wrap { align-items: center; }
+      .footer-links { justify-content: center; }
       .headphones-callout { flex-direction: column; text-align: center; }
     }
 
@@ -1184,15 +1193,19 @@
 <!-- ─── FOOTER ─── -->
 <footer>
   <img src="https://assets.cdn.filesafe.space/8LMHuLoIUmoeVdwTITeb/media/6a04f6b482125b9874d11126.png" alt="Quantum Therapy" class="footer-logo-img" />
-  <ul class="footer-links">
-    <li><a href="#science">Science</a></li>
-    <li><a href="#how">How It Works</a></li>
-    <li><a href="#pricing">Pricing</a></li>
-    <li><a href="https://go.quantumtherapy.app" target="_blank">Launch App</a></li>
-    <li><a href="#" onclick="openModal('modal-contact'); return false;">Contact Us</a></li>
-    <li><a href="#" onclick="openModal('modal-privacy'); return false;">Privacy Policy</a></li>
-    <li><a href="#" onclick="openModal('modal-terms'); return false;">Terms of Use</a></li>
-  </ul>
+  <div class="footer-links-wrap">
+    <ul class="footer-links">
+      <li><a href="#science">Science</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="https://go.quantumtherapy.app" target="_blank">Launch App</a></li>
+      <li><a href="#" onclick="openModal('modal-contact'); return false;">Contact Us</a></li>
+    </ul>
+    <ul class="footer-links footer-legal">
+      <li><a href="#" onclick="openModal('modal-privacy'); return false;">Privacy Policy</a></li>
+      <li><a href="#" onclick="openModal('modal-terms'); return false;">Terms of Use</a></li>
+    </ul>
+  </div>
   <p class="footer-copy">© 2026 QuantumTherapy.app · Better Branding LLC<br/>For experimental & educational purposes only.</p>
 </footer>
 
