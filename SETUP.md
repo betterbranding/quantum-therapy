@@ -143,18 +143,24 @@ run it.
 > never appear in a `NEXT_PUBLIC_` variable, never be committed, and never be sent
 > to a browser. It is only used by the Stripe webhook and the seed script.
 
-### 2d. Load the protocols
+### 2d. The protocols are already loaded
 
-From the repo root:
+Done as well. The database currently holds:
+
+- **1,395 protocols**
+- **11,624 frequencies**
+- **22 standalone tones**
+
+Server-side search is live and tested: `search_protocols('insomnia')` returns
+Insomnia (Nervous System, 10 frequencies) as its top hit.
+
+If you ever need to reload the library, from the repo root:
 
 ```bash
 npm run seed
 ```
 
-This pushes all 1,395 protocols and 22 tones into Postgres. It prints progress and
-a final count. Re-running it is safe, it upserts on `slug`.
-
-Confirm in **Table Editor → protocols**: 1,395 rows.
+It upserts on `slug`, so re-running it is always safe.
 
 ### 2e. Turn on sign-in
 
