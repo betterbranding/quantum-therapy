@@ -1,0 +1,22 @@
+{
+  "name": "Quantum Therapy: Rife Frequency Protocols",
+  "short_name": "Quantum Therapy",
+  "description": "Search 1,395 Rife frequency protocols and play them as binaural beat sessions with ambient soundscapes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060a17",
+  "theme_color": "#060a17",
+  "categories": ["health", "lifestyle", "medical"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Search protocols", "url": "/search" },
+    { "name": "Standalone tones", "url": "/frequencies" }
+  ]
+}
