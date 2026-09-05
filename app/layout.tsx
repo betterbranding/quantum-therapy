@@ -3,6 +3,7 @@ import { Rajdhani, Orbitron, Outfit, JetBrains_Mono } from "next/font/google";
 import { TabBar } from "@/components/TabBar";
 import { Onboarding } from "@/components/Onboarding";
 import "./globals.css";
+import { siteUrl } from "@/lib/site";
 
 const rajdhani = Rajdhani({
   subsets: ["latin"],
@@ -28,8 +29,6 @@ const jet = JetBrains_Mono({
   variable: "--font-jet",
   display: "swap",
 });
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://quantumtherapy.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

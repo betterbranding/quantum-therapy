@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { localProtocols, LOCAL_TONES } from "@/lib/protocols";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://quantumtherapy.app";
+import { siteUrl } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

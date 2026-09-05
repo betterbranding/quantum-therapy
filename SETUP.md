@@ -364,6 +364,12 @@ You have not run `npm run seed`, so the `protocols` table is empty. The API fall
 back to the bundled file only when Supabase is entirely absent, not when it is
 present and empty.
 
+**Build fails with `ERR_INVALID_URL` and `input: ''`.**
+`NEXT_PUBLIC_SITE_URL` was added in Vercel with a blank value. Either give it a real
+value (`https://app.quantumtherapy.app`) or delete the variable entirely. The app now
+tolerates a blank value and falls back to Vercel's own URL, but a correct value is
+still what you want for Stripe redirects and the sitemap.
+
 **Build fails on Vercel with a Supabase error.**
 An environment variable is missing or has a stray newline from pasting. Re-paste it,
 and make sure there is no trailing whitespace.

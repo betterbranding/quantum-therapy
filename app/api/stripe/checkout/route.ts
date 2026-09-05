@@ -3,13 +3,14 @@ import { getStripe, stripeConfigured } from "@/lib/stripe";
 import { TIER_BY_ID } from "@/lib/tiers";
 import { createAdminClient, createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/supabase/types";
+import { getSiteUrl } from "@/lib/site";
 
 type CheckoutBody = { tier?: unknown; interval?: unknown };
 type PaidTier = "pro" | "premium";
 type Interval = "monthly" | "yearly";
 
 function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+  return getSiteUrl();
 }
 
 function priceEnvironmentName(tier: PaidTier, interval: Interval): string {

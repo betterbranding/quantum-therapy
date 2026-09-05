@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { getStripe, stripeConfigured } from "@/lib/stripe";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/supabase/types";
+import { getSiteUrl } from "@/lib/site";
 
 function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+  return getSiteUrl();
 }
 
 export async function POST() {
