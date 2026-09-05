@@ -26,7 +26,13 @@ import {
   type PlayerState,
   type PhaseName,
 } from "@/lib/audio/engine";
-import { AmbientEngine, AMBIENT_PRESETS, type AmbientPresetId } from "@/lib/audio/ambient";
+import {
+  AmbientEngine,
+  AMBIENT_PRESETS,
+  preloadAmbient,
+  type AmbientPresetId,
+  type AmbientStatus,
+} from "@/lib/audio/ambient";
 import { unlockIOSAudio, setMediaSession } from "@/lib/audio/iosUnlock";
 import { cn, formatClock, formatHz } from "@/lib/utils";
 import type { Protocol, TierId } from "@/lib/supabase/types";
@@ -53,6 +59,7 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
   const [stepSeconds, setStepSeconds] = useState(180);
   const [volume, setVolume] = useState(0.75);
   const [ambient, setAmbient] = useState<AmbientPresetId | null>(null);
+  const [ambientStatus, setAmbientStatus] = useState<AmbientStatus>("idle");
   const [grounding, setGrounding] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [lockIn, setLockIn] = useState(false);
@@ -152,6 +159,7 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
 
     if (ambient) {
       const amb = ambientRef.current ?? new AmbientEngine();
+      amb.onStatus = setAmbientStatus;
       ambientRef.current = amb;
       void amb.play(ambient);
     }
@@ -203,8 +211,10 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
     }
     const next = ambient === id ? null : id;
     setAmbient(next);
+    if (next) preloadAmbient(next);
     if (!playerRef.current || !state?.isPlaying) return;
     const amb = ambientRef.current ?? new AmbientEngine();
+    amb.onStatus = setAmbientStatus;
     ambientRef.current = amb;
     if (next) void amb.play(next);
     else amb.stop();
@@ -417,8 +427,14 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
       {/* ---------------- AMBIENT ---------------- */}
       <div className="glass p-4">
         <div className="flex items-center justify-between">
-          <p className="t-label">Ambient soundscape</p>
-          {!isPro && <span className="text-[0.62rem] text-ink-faint">1 of 5 on Free</span>}
+          <p className="t-label">Synth pad bed</p>
+          {ambientStatus === "loading" ? (
+            <span className="text-[0.62rem] text-cyan">Loading pad</span>
+          ) : ambientStatus === "error" ? (
+            <span className="text-[0.62rem] text-ink-faint">Pad unavailable offline</span>
+          ) : (
+            !isPro && <span className="text-[0.62rem] text-ink-faint">1 of 5 on Free</span>
+          )}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {AMBIENT_PRESETS.map((p) => {

@@ -10,7 +10,7 @@ import {
   BLOCKED_NOTICE,
   type PlayerState,
 } from "@/lib/audio/engine";
-import { AmbientEngine, AMBIENT_PRESETS, type AmbientPresetId } from "@/lib/audio/ambient";
+import { AmbientEngine, AMBIENT_PRESETS, preloadAmbient, type AmbientPresetId } from "@/lib/audio/ambient";
 import { unlockIOSAudio, setMediaSession } from "@/lib/audio/iosUnlock";
 import { formatClock, cn } from "@/lib/utils";
 import type { Tone } from "@/lib/supabase/types";
@@ -194,7 +194,7 @@ export function TonePlayer({ tone }: { tone: Tone }) {
       </div>
 
       <div className="mt-6">
-        <p className="t-label">Ambient soundscape</p>
+        <p className="t-label">Synth pad bed</p>
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           <button
             onClick={() => setAmbient(null)}
@@ -211,7 +211,10 @@ export function TonePlayer({ tone }: { tone: Tone }) {
           {AMBIENT_PRESETS.map((p) => (
             <button
               key={p.id}
-              onClick={() => setAmbient(p.id)}
+              onClick={() => {
+                setAmbient(p.id);
+                preloadAmbient(p.id);
+              }}
               className="glass glass-hover p-3 text-left"
               style={
                 ambient === p.id
