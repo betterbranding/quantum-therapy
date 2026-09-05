@@ -2,7 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play, Headphones, Volume2 } from "lucide-react";
-import { SessionPlayer, preWarm, deliveryModeFor, type PlayerState } from "@/lib/audio/engine";
+import {
+  SessionPlayer,
+  preWarm,
+  deliveryModeFor,
+  verifyEngineAfter,
+  BLOCKED_NOTICE,
+  type PlayerState,
+} from "@/lib/audio/engine";
 import { AmbientEngine, AMBIENT_PRESETS, type AmbientPresetId } from "@/lib/audio/ambient";
 import { unlockIOSAudio, setMediaSession } from "@/lib/audio/iosUnlock";
 import { formatClock, cn } from "@/lib/utils";
@@ -15,6 +22,7 @@ export function TonePlayer({ tone }: { tone: Tone }) {
   const [volume, setVolume] = useState(0.75);
   const [ambient, setAmbient] = useState<AmbientPresetId | null>(null);
   const [state, setState] = useState<PlayerState | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const playerRef = useRef<SessionPlayer | null>(null);
   const ambientRef = useRef<AmbientEngine | null>(null);
@@ -28,11 +36,19 @@ export function TonePlayer({ tone }: { tone: Tone }) {
     };
   }, []);
 
-  // Rebuild the player when duration changes, but never while a session is
-  // actively running so we never cut off in-progress playback.
+  // When duration or tone changes (and nothing is playing) discard the old
+  // player. A fresh one is built on the next tap, INSIDE the gesture, so the
+  // AudioContext is never created outside user interaction. iOS cares.
   useEffect(() => {
     if (state?.isPlaying) return;
     playerRef.current?.stop();
+    playerRef.current = null;
+    setState(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tone.frequency, minutes]);
+
+  const ensurePlayer = () => {
+    if (playerRef.current) return playerRef.current;
     const player = new SessionPlayer({
       frequencies: [tone.frequency],
       stepSeconds: minutes * 60,
@@ -40,8 +56,8 @@ export function TonePlayer({ tone }: { tone: Tone }) {
     });
     player.onUpdate = (s) => setState(s);
     playerRef.current = player;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tone.frequency, minutes]);
+    return player;
+  };
 
   useEffect(() => {
     playerRef.current?.setVolume(volume);
@@ -52,8 +68,7 @@ export function TonePlayer({ tone }: { tone: Tone }) {
     unlockIOSAudio();
     await preWarm();
 
-    const player = playerRef.current;
-    if (!player) return;
+    const player = ensurePlayer();
 
     if (state?.isPlaying) {
       player.pause();
@@ -71,6 +86,9 @@ export function TonePlayer({ tone }: { tone: Tone }) {
     } else {
       await player.start();
     }
+    verifyEngineAfter(1200, (blocked) => {
+      setNotice(blocked ? BLOCKED_NOTICE : null);
+    });
   };
 
   const isPlaying = state?.isPlaying ?? false;
@@ -115,6 +133,15 @@ export function TonePlayer({ tone }: { tone: Tone }) {
           </div>
         </div>
       </div>
+
+      {notice && (
+        <div className="mt-4 flex items-start justify-between gap-3 rounded-2xl border border-magenta/25 bg-magenta/8 p-3.5">
+          <p className="text-[0.78rem] leading-relaxed text-ink-soft">{notice}</p>
+          <button onClick={() => setNotice(null)} className="shrink-0 text-[0.7rem] text-ink-faint hover:text-ink">
+            Close
+          </button>
+        </div>
+      )}
 
       {mode === "isochronic" && (
         <div className="glass mt-4 p-4">

@@ -20,6 +20,8 @@ import {
   preWarm,
   deliveryModeFor,
   renderSessionToWav,
+  verifyEngineAfter,
+  BLOCKED_NOTICE,
   PHASE_FREQUENCIES,
   type PlayerState,
   type PhaseName,
@@ -157,6 +159,9 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
     setMediaSession(protocol.name);
     await player.start();
     setStarting(false);
+    verifyEngineAfter(1200, (blocked) => {
+      if (blocked) setNotice(BLOCKED_NOTICE);
+    });
   }, [options, ambient, protocol, signedIn, finishSession, totalSeconds]);
 
   const toggle = useCallback(async () => {
@@ -170,6 +175,10 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
       await preWarm();
       await p.resume();
       if (ambient) void ambientRef.current?.play(ambient);
+      verifyEngineAfter(1200, (blocked) => {
+        if (blocked) setNotice(BLOCKED_NOTICE);
+        else setNotice((n) => (n === BLOCKED_NOTICE ? null : n));
+      });
     }
   }, [state, start, ambient]);
 

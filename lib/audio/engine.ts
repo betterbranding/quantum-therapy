@@ -28,20 +28,80 @@ export type DeliveryMode = "binaural" | "isochronic";
 
 let ctx: AudioContext | null = null;
 
+/**
+ * Safari reports a non-standard "interrupted" state (phone call, Siri, another
+ * app grabbing the audio session, or the screen locking). It is NOT "suspended",
+ * so any code that only checks for "suspended" will never recover from it.
+ */
+export type EngineState = AudioContextState | "interrupted";
+
+export function engineState(): EngineState | "none" {
+  return ctx ? (ctx.state as EngineState) : "none";
+}
+
+/** True when the engine is not actually producing output. */
+export function engineBlocked(): boolean {
+  return !!ctx && ctx.state !== "running";
+}
+
+let watching = false;
+
+/**
+ * Keep the context alive across iOS interruptions. Once the interruption ends
+ * (call over, app back in the foreground) resume() succeeds without a gesture.
+ */
+function watchContext(c: AudioContext) {
+  if (watching) return;
+  watching = true;
+
+  const tryResume = () => {
+    if (c.state !== "running") {
+      c.resume().catch(() => {
+        /* needs a gesture; the next Play tap handles it */
+      });
+    }
+  };
+
+  c.addEventListener("statechange", () => {
+    if ((c.state as EngineState) === "interrupted") {
+      // Give iOS a beat to release the session, then ask for it back.
+      setTimeout(tryResume, 300);
+    }
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") tryResume();
+  });
+  window.addEventListener("pageshow", tryResume);
+  window.addEventListener("focus", tryResume);
+}
+
 export function getAudioContext(): AudioContext {
   if (!ctx) {
     const Ctor =
       window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     ctx = new Ctor({ latencyHint: "playback" });
+    watchContext(ctx);
   }
   return ctx;
+}
+
+export const BLOCKED_NOTICE =
+  "Your phone blocked the audio engine. Tap play once more. If the side switch is on silent, flip it, then tap play.";
+
+/**
+ * A short while after starting, confirm the engine is really running. iOS can
+ * accept the start() call and then hand the audio session to something else.
+ */
+export function verifyEngineAfter(ms: number, onResult: (blocked: boolean) => void): void {
+  setTimeout(() => onResult(engineBlocked()), ms);
 }
 
 /** Call this INSIDE the user gesture handler, before any async work. */
 export async function preWarm(): Promise<AudioContext> {
   const c = getAudioContext();
-  if (c.state === "suspended") {
+  // Anything other than "running" (suspended OR interrupted) needs a resume.
+  if (c.state !== "running") {
     try {
       await c.resume();
     } catch {
