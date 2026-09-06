@@ -6,18 +6,19 @@
  * and tone.
  *
  * Reference levels, for the on-screen balance readout:
- *   - A sine at gain 1.0 is about -3 dBFS RMS.
- *   - The pad tracks are mastered to -18 LUFS, so at gain 1.0 they sit about
- *     -18 dBFS. TONE_OFFSET_DB captures that 15 dB gap so the readout says
- *     what the ear hears, not what the sliders say.
+ *   - A sine at gain 1.0 is about -3 dBFS RMS; the engine trims the tone bus
+ *     by TONE_TRIM (-12 dB), so slider 1.0 lands near -15 dBFS.
+ *   - The pad tracks are mastered to -18 LUFS, so slider 1.0 sits near -18.
+ *   TONE_OFFSET_DB is the remaining 3 dB gap, so the readout says what the
+ *   ear hears rather than what the slider positions say.
  */
 
 export type Mix = { tone: number; pad: number };
 
-export const DEFAULT_MIX: Mix = { tone: 0.35, pad: 0.85 };
+export const DEFAULT_MIX: Mix = { tone: 0.45, pad: 0.85 };
 
-const KEY = "qt.mix.v1";
-const TONE_OFFSET_DB = 15;
+const KEY = "qt.mix.v2";
+const TONE_OFFSET_DB = 3;
 
 const clamp = (v: number) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0);
 

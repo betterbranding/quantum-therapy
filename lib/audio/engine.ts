@@ -22,6 +22,13 @@
 export const CARRIER_HZ = 200;
 export const BINAURAL_MAX_HZ = 1500;
 export const LOOP_SECONDS = 4;
+/**
+ * Trim applied to the tone master so the Frequency slider and the Pad slider
+ * share one loudness scale. A full-scale sine is ~-3 dBFS; the pad beds are
+ * mastered to -18 LUFS. -12 dB here puts slider 1.0 on the tone at ~-15 dBFS,
+ * so equal slider positions sound roughly equal (tone ~3 dB ahead).
+ */
+export const TONE_TRIM = 0.25;
 const FADE_SECONDS = 0.04;
 
 export type DeliveryMode = "binaural" | "isochronic";
@@ -233,7 +240,7 @@ export class SessionPlayer {
   constructor(private opts: SessionOptions) {
     this.ctx = getAudioContext();
     this.master = this.ctx.createGain();
-    this.master.gain.value = opts.volume ?? 0.75;
+    this.master.gain.value = (opts.volume ?? 0.45) * TONE_TRIM;
     this.master.connect(this.ctx.destination);
     this.buildQueue();
   }
@@ -266,7 +273,7 @@ export class SessionPlayer {
 
   setVolume(v: number) {
     this.opts.volume = v;
-    this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.02);
+    this.master.gain.setTargetAtTime(v * TONE_TRIM, this.ctx.currentTime, 0.02);
   }
 
   /** Must be called from within a user gesture the first time. */
