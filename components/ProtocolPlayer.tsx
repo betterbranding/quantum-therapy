@@ -8,7 +8,6 @@ import {
   SkipBack,
   SkipForward,
   Square,
-  Volume2,
   Headphones,
   Download,
   Lock,
@@ -34,6 +33,8 @@ import {
   type AmbientStatus,
 } from "@/lib/audio/ambient";
 import { unlockIOSAudio, setMediaSession } from "@/lib/audio/iosUnlock";
+import { DEFAULT_MIX, loadMix, saveMix, type Mix } from "@/lib/audio/mix";
+import { MixPanel } from "@/components/MixPanel";
 import { cn, formatClock, formatHz } from "@/lib/utils";
 import type { Protocol, TierId } from "@/lib/supabase/types";
 
@@ -57,7 +58,8 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
   const isPro = tier === "pro" || tier === "premium";
 
   const [stepSeconds, setStepSeconds] = useState(180);
-  const [volume, setVolume] = useState(0.75);
+  const [mix, setMix] = useState<Mix>(DEFAULT_MIX);
+  const volume = mix.tone;
   const [ambient, setAmbient] = useState<AmbientPresetId | null>(null);
   const [ambientStatus, setAmbientStatus] = useState<AmbientStatus>("idle");
   const [grounding, setGrounding] = useState(false);
@@ -92,6 +94,11 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
 
   // Tear down on unmount. Leaving an oscillator running after navigation is
   // the single most common bug in audio apps.
+  // Hydrate saved mix after mount (localStorage is client only).
+  useEffect(() => {
+    setMix(loadMix());
+  }, []);
+
   useEffect(() => {
     return () => {
       playerRef.current?.stop();
@@ -158,7 +165,7 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
     playerRef.current = player;
 
     if (ambient) {
-      const amb = ambientRef.current ?? new AmbientEngine();
+      const amb = ambientRef.current ?? new AmbientEngine(mix.pad);
       amb.onStatus = setAmbientStatus;
       ambientRef.current = amb;
       void amb.play(ambient);
@@ -198,9 +205,11 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
     setState(null);
   }, [state, finishSession]);
 
-  const changeVolume = (v: number) => {
-    setVolume(v);
-    playerRef.current?.setVolume(v);
+  const changeMix = (next: Mix) => {
+    setMix(next);
+    saveMix(next);
+    playerRef.current?.setVolume(next.tone);
+    ambientRef.current?.setLevel(next.pad);
   };
 
   const chooseAmbient = (id: AmbientPresetId) => {
@@ -213,7 +222,7 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
     setAmbient(next);
     if (next) preloadAmbient(next);
     if (!playerRef.current || !state?.isPlaying) return;
-    const amb = ambientRef.current ?? new AmbientEngine();
+    const amb = ambientRef.current ?? new AmbientEngine(mix.pad);
     amb.onStatus = setAmbientStatus;
     ambientRef.current = amb;
     if (next) void amb.play(next);
@@ -382,25 +391,8 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
         )}
       </AnimatePresence>
 
-      {/* ---------------- VOLUME ---------------- */}
-      <div className="glass p-4">
-        <div className="flex items-center gap-3">
-          <Volume2 className="size-4 shrink-0 text-ink-faint" />
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={volume}
-            onChange={(e) => changeVolume(Number(e.target.value))}
-            className="h-1 w-full cursor-pointer appearance-none rounded-full bg-raised accent-cyan"
-            aria-label="Volume"
-          />
-          <span className="t-mono w-9 shrink-0 text-right text-[0.68rem] text-ink-faint">
-            {Math.round(volume * 100)}
-          </span>
-        </div>
-      </div>
+      {/* ---------------- MIX ---------------- */}
+      <MixPanel className="glass p-4" mix={mix} onChange={changeMix} padActive={ambient !== null} />
 
       {/* ---------------- DURATION ---------------- */}
       <div className="glass p-4">

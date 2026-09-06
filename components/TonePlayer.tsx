@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play, Headphones, Volume2 } from "lucide-react";
+import { Pause, Play, Headphones } from "lucide-react";
+import { DEFAULT_MIX, loadMix, saveMix, type Mix } from "@/lib/audio/mix";
+import { MixPanel } from "@/components/MixPanel";
 import {
   SessionPlayer,
   preWarm,
@@ -19,7 +21,8 @@ const DURATIONS = [5, 10, 20, 30, 60];
 
 export function TonePlayer({ tone }: { tone: Tone }) {
   const [minutes, setMinutes] = useState(10);
-  const [volume, setVolume] = useState(0.75);
+  const [mix, setMix] = useState<Mix>(DEFAULT_MIX);
+  const volume = mix.tone;
   const [ambient, setAmbient] = useState<AmbientPresetId | null>(null);
   const [state, setState] = useState<PlayerState | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -59,9 +62,20 @@ export function TonePlayer({ tone }: { tone: Tone }) {
     return player;
   };
 
+  // Hydrate saved mix after mount (localStorage is client only).
   useEffect(() => {
-    playerRef.current?.setVolume(volume);
-  }, [volume]);
+    setMix(loadMix());
+  }, []);
+
+  useEffect(() => {
+    playerRef.current?.setVolume(mix.tone);
+    ambientRef.current?.setLevel(mix.pad);
+  }, [mix]);
+
+  const changeMix = (next: Mix) => {
+    setMix(next);
+    saveMix(next);
+  };
 
   const toggle = async () => {
     // Must run synchronously at the start of the gesture, before any other await.
@@ -78,7 +92,7 @@ export function TonePlayer({ tone }: { tone: Tone }) {
 
     setMediaSession(tone.name);
     if (ambient) {
-      if (!ambientRef.current) ambientRef.current = new AmbientEngine();
+      if (!ambientRef.current) ambientRef.current = new AmbientEngine(mix.pad);
       await ambientRef.current.play(ambient);
     }
     if (state && state.totalElapsed > 0 && state.totalElapsed < state.totalDuration) {
@@ -176,22 +190,7 @@ export function TonePlayer({ tone }: { tone: Tone }) {
         </div>
       </div>
 
-      <div className="mt-6">
-        <p className="t-label">Volume</p>
-        <div className="mt-3 flex items-center gap-3">
-          <Volume2 className="size-4 shrink-0 text-ink-faint" />
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={volume}
-            onChange={(e) => setVolume(Number(e.target.value))}
-            className="w-full accent-cyan"
-            aria-label="Volume"
-          />
-        </div>
-      </div>
+      <MixPanel className="mt-6" mix={mix} onChange={changeMix} padActive={ambient !== null} />
 
       <div className="mt-6">
         <p className="t-label">Synth pad bed</p>
