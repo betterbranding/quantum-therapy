@@ -5,20 +5,18 @@
  * the device so a listener's preferred balance carries across every protocol
  * and tone.
  *
- * Reference levels, for the on-screen balance readout:
- *   - A sine at gain 1.0 is about -3 dBFS RMS; the engine trims the tone bus
- *     by TONE_TRIM (-12 dB), so slider 1.0 lands near -15 dBFS.
- *   - The pad tracks are mastered to -18 LUFS, so slider 1.0 sits near -18.
- *   TONE_OFFSET_DB is the remaining 3 dB gap, so the readout says what the
- *   ear hears rather than what the slider positions say.
+ * The engine trims the tone bus (TONE_TRIM in engine.ts) so that the two
+ * sliders share one loudness scale: equal positions sound equal. That makes
+ * the on-screen readout a straight ratio of the two slider values.
+ * TONE_OFFSET_DB is kept for any future re-mastering of the pads.
  */
 
 export type Mix = { tone: number; pad: number };
 
-export const DEFAULT_MIX: Mix = { tone: 0.45, pad: 0.85 };
+export const DEFAULT_MIX: Mix = { tone: 0.6, pad: 0.85 };
 
-const KEY = "qt.mix.v2";
-const TONE_OFFSET_DB = 3;
+const KEY = "qt.mix.v3";
+const TONE_OFFSET_DB = 0;
 
 const clamp = (v: number) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0);
 

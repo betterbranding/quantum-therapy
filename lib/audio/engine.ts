@@ -24,11 +24,12 @@ export const BINAURAL_MAX_HZ = 1500;
 export const LOOP_SECONDS = 4;
 /**
  * Trim applied to the tone master so the Frequency slider and the Pad slider
- * share one loudness scale. A full-scale sine is ~-3 dBFS; the pad beds are
- * mastered to -18 LUFS. -12 dB here puts slider 1.0 on the tone at ~-15 dBFS,
- * so equal slider positions sound roughly equal (tone ~3 dB ahead).
+ * share one loudness scale. Rendered tones are sines at amplitude 0.28, which
+ * is about -14 dBFS RMS per ear; the pad beds are mastered to -18 LUFS. A -4 dB
+ * trim puts both sliders at the same level when set to the same position.
+ * Measured on the live build, not guessed.
  */
-export const TONE_TRIM = 0.25;
+export const TONE_TRIM = 0.63;
 const FADE_SECONDS = 0.04;
 
 export type DeliveryMode = "binaural" | "isochronic";
@@ -240,7 +241,7 @@ export class SessionPlayer {
   constructor(private opts: SessionOptions) {
     this.ctx = getAudioContext();
     this.master = this.ctx.createGain();
-    this.master.gain.value = (opts.volume ?? 0.45) * TONE_TRIM;
+    this.master.gain.value = (opts.volume ?? 0.6) * TONE_TRIM;
     this.master.connect(this.ctx.destination);
     this.buildQueue();
   }
