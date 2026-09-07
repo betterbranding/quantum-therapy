@@ -76,6 +76,9 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
 
   const playerRef = useRef<SessionPlayer | null>(null);
   const ambientRef = useRef<AmbientEngine | null>(null);
+  // Once the listener picks a pad or turns it off themselves, stop applying the
+  // auto-default so we never override their choice.
+  const padTouchedRef = useRef(false);
   const sessionIdRef = useRef<number | null>(null);
 
   const options = useMemo(
@@ -103,14 +106,16 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
     setMix(loadMix());
   }, []);
 
-  // Setup Defaults: pre-select the pad that matches the visitor's declared
-  // intent, so the player arrives already tuned. A Pro-only pad falls back to
-  // the free Deep Space rather than pre-selecting something the user can't use.
+  // Setup Defaults: the pad is ON by default so the first play arrives already
+  // scored, not silent. If the visitor declared an intent, we tune to its pad;
+  // otherwise everyone still gets the free Deep Space. A Pro-only pad falls back
+  // to Deep Space rather than pre-selecting something the user can't use. Once
+  // the listener touches the pad control themselves, we stop overriding them.
   useEffect(() => {
+    if (padTouchedRef.current) return;
     const def = intentById(loadIntent());
-    if (!def) return;
-    const preset = AMBIENT_PRESETS.find((p) => p.id === def.pad);
-    const usable = preset && (preset.free || isPro) ? def.pad : "deep-space";
+    const preset = def ? AMBIENT_PRESETS.find((p) => p.id === def.pad) : undefined;
+    const usable = def && preset && (preset.free || isPro) ? def.pad : "deep-space";
     setAmbient(usable);
     preloadAmbient(usable);
   }, [isPro]);
@@ -238,6 +243,7 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
       setNotice("That soundscape is part of Pro. Deep Space is available on every plan.");
       return;
     }
+    padTouchedRef.current = true;
     const next = ambient === id ? null : id;
     setAmbient(next);
     if (next) preloadAmbient(next);

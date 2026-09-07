@@ -35,6 +35,9 @@ export function TonePlayer({ tone }: { tone: Tone }) {
 
   const playerRef = useRef<SessionPlayer | null>(null);
   const ambientRef = useRef<AmbientEngine | null>(null);
+  // Once the listener picks a pad or turns it off themselves, stop applying the
+  // auto-default so we never override their choice.
+  const padTouchedRef = useRef(false);
 
   const mode = deliveryModeFor(tone.frequency);
 
@@ -79,14 +82,16 @@ export function TonePlayer({ tone }: { tone: Tone }) {
     setMix(loadMix());
   }, []);
 
-  // Setup Defaults: pre-select the pad matching the visitor's declared intent.
-  // Only the free Deep Space is auto-applied here, since a tone viewer's tier is
-  // not read on this statically generated page.
+  // Setup Defaults: the pad is ON by default so the first play arrives already
+  // scored, not silent. If the visitor declared an intent we tune to its pad;
+  // otherwise everyone still gets the free Deep Space. Only free pads are
+  // auto-applied here, since a tone viewer's tier is not read on this statically
+  // generated page. Once the listener touches the pad control, we stop overriding.
   useEffect(() => {
+    if (padTouchedRef.current) return;
     const def = intentById(loadIntent());
-    if (!def) return;
-    const preset = AMBIENT_PRESETS.find((p) => p.id === def.pad);
-    const usable = preset && preset.free ? def.pad : "deep-space";
+    const preset = def ? AMBIENT_PRESETS.find((p) => p.id === def.pad) : undefined;
+    const usable = def && preset && preset.free ? def.pad : "deep-space";
     setAmbient(usable);
     preloadAmbient(usable);
   }, []);
@@ -245,7 +250,10 @@ export function TonePlayer({ tone }: { tone: Tone }) {
         <p className="t-label">Synth pad bed</p>
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           <button
-            onClick={() => setAmbient(null)}
+            onClick={() => {
+              padTouchedRef.current = true;
+              setAmbient(null);
+            }}
             className="glass glass-hover p-3 text-left"
             style={
               ambient === null
@@ -260,6 +268,7 @@ export function TonePlayer({ tone }: { tone: Tone }) {
             <button
               key={p.id}
               onClick={() => {
+                padTouchedRef.current = true;
                 setAmbient(p.id);
                 preloadAmbient(p.id);
               }}
