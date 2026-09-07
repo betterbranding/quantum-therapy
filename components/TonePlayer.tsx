@@ -14,6 +14,10 @@ import {
 } from "@/lib/audio/engine";
 import { AmbientEngine, AMBIENT_PRESETS, preloadAmbient, type AmbientPresetId } from "@/lib/audio/ambient";
 import { unlockIOSAudio, setMediaSession } from "@/lib/audio/iosUnlock";
+import { SessionCompleteMoment } from "@/components/SessionCompleteMoment";
+import { loadIntent, intentById } from "@/lib/intent";
+import { completedCount, recordCompletion } from "@/lib/first-session";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { formatClock, cn } from "@/lib/utils";
 import type { Tone } from "@/lib/supabase/types";
 
@@ -26,6 +30,8 @@ export function TonePlayer({ tone }: { tone: Tone }) {
   const [ambient, setAmbient] = useState<AmbientPresetId | null>(null);
   const [state, setState] = useState<PlayerState | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [showFirstComplete, setShowFirstComplete] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
 
   const playerRef = useRef<SessionPlayer | null>(null);
   const ambientRef = useRef<AmbientEngine | null>(null);
@@ -58,6 +64,12 @@ export function TonePlayer({ tone }: { tone: Tone }) {
       volume,
     });
     player.onUpdate = (s) => setState(s);
+    player.onComplete = () => {
+      ambientRef.current?.stop();
+      const isFirst = completedCount() === 0;
+      recordCompletion();
+      if (isFirst) setShowFirstComplete(true);
+    };
     playerRef.current = player;
     return player;
   };
@@ -65,6 +77,34 @@ export function TonePlayer({ tone }: { tone: Tone }) {
   // Hydrate saved mix after mount (localStorage is client only).
   useEffect(() => {
     setMix(loadMix());
+  }, []);
+
+  // Setup Defaults: pre-select the pad matching the visitor's declared intent.
+  // Only the free Deep Space is auto-applied here, since a tone viewer's tier is
+  // not read on this statically generated page.
+  useEffect(() => {
+    const def = intentById(loadIntent());
+    if (!def) return;
+    const preset = AMBIENT_PRESETS.find((p) => p.id === def.pad);
+    const usable = preset && preset.free ? def.pad : "deep-space";
+    setAmbient(usable);
+    preloadAmbient(usable);
+  }, []);
+
+  // Lightweight signed-in check, so the Success Moment shows the right CTA
+  // without turning this page into a dynamic (non-static) route.
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let active = true;
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => {
+        if (active) setSignedIn(Boolean(data.user));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -113,6 +153,15 @@ export function TonePlayer({ tone }: { tone: Tone }) {
 
   return (
     <div className="mt-6">
+      {showFirstComplete && (
+        <SessionCompleteMoment
+          title={tone.name}
+          freqCount={1}
+          durationSecs={state?.totalElapsed ?? minutes * 60}
+          signedIn={signedIn}
+          onClose={() => setShowFirstComplete(false)}
+        />
+      )}
       <div className="glass rim relative overflow-hidden p-6 text-center">
         <div className="t-freq grad-primary glow-cyan text-[3rem] leading-none">
           {tone.frequency}

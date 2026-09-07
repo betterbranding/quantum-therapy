@@ -4,6 +4,8 @@ import { ResonanceHero } from "@/components/ResonanceHero";
 import { SearchLauncher } from "@/components/SearchLauncher";
 import { PROTOCOL_COUNT, FREQUENCY_COUNT, categoryCounts, localProtocols } from "@/lib/protocols";
 import { TONES } from "@/data/tones";
+import { IntentFeatured, type FeaturedItem } from "@/components/IntentFeatured";
+import { ALL_INTENT_SLUGS } from "@/lib/intent";
 
 const QUICK = [
   "Anxiety",
@@ -20,13 +22,18 @@ const QUICK = [
 
 export default function HomePage() {
   const cats = categoryCounts().slice(0, 8);
-  // Hand-picked entry points. Alphabetical order would surface "Abdominal
-  // inflammation" first, which is a poor first impression of the library.
-  const FEATURED_SLUGS = ["insomnia", "pain-general", "lyme-disease", "candida"];
+  // Pool of every protocol any onboarding intent might feature. The client
+  // component picks four from here based on the visitor's declared intent, so
+  // the featured list personalises without shipping all 1,395 to the browser.
   const bySlug = new Map(localProtocols().map((p) => [p.slug, p]));
-  const featured = FEATURED_SLUGS.map((s) => bySlug.get(s)).filter(
-    (p): p is NonNullable<typeof p> => Boolean(p),
-  );
+  const featuredPool: FeaturedItem[] = ALL_INTENT_SLUGS.map((s) => bySlug.get(s))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p))
+    .map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      category: p.category,
+      freqCount: p.frequencies.length,
+    }));
 
   return (
     <div className="px-5 pt-3">
@@ -200,31 +207,7 @@ export default function HomePage() {
 
       {/* ---------------- FEATURED ---------------- */}
       <section className="rise mt-10" style={{ animationDelay: "0.54s" }}>
-        <p className="t-label">Start Here</p>
-        <h2 className="t-display mt-2 text-[1.75rem] text-ink">Start with these</h2>
-        <div className="mt-5 space-y-2.5">
-          {featured.map((p) => (
-            <Link
-              key={p.slug}
-              href={`/protocol/${p.slug}`}
-              className="glass glass-hover flex items-center justify-between gap-4 p-4"
-            >
-              <div className="min-w-0">
-                <div className="t-display truncate text-[1.05rem] tracking-normal text-ink">
-                  {p.name}
-                </div>
-                <div className="mt-1 flex items-center gap-2 text-[0.7rem] text-ink-faint">
-                  <span className="t-freq text-cyan">{p.frequencies.length} freq</span>
-                  <span className="opacity-40">/</span>
-                  <span className="truncate">{p.category}</span>
-                </div>
-              </div>
-              <div className="grid size-9 shrink-0 place-items-center rounded-full border border-cyan/35 bg-cyan/10">
-                <ArrowRight className="size-4 text-cyan-glow" />
-              </div>
-            </Link>
-          ))}
-        </div>
+        <IntentFeatured pool={featuredPool} />
       </section>
 
       {/* ---------------- DR RIFE ---------------- */}

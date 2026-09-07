@@ -38,6 +38,7 @@ create table if not exists public.profiles (
   subscription_status    subscription_status not null default 'none',
   current_period_end     timestamptz,
   onboarding_completed   boolean not null default false,
+  intent                 text,
   ghl_contact_id         text,
   created_at             timestamptz not null default now(),
   updated_at             timestamptz not null default now(),

@@ -37,6 +37,7 @@ export type Profile = {
   subscription_status: StatusId;
   current_period_end: string | null;
   onboarding_completed: boolean;
+  intent: string | null;
   ghl_contact_id: string | null;
   created_at: string;
   updated_at: string;

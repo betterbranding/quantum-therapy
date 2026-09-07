@@ -35,6 +35,9 @@ import {
 import { unlockIOSAudio, setMediaSession } from "@/lib/audio/iosUnlock";
 import { DEFAULT_MIX, loadMix, saveMix, type Mix } from "@/lib/audio/mix";
 import { MixPanel } from "@/components/MixPanel";
+import { SessionCompleteMoment } from "@/components/SessionCompleteMoment";
+import { loadIntent, intentById } from "@/lib/intent";
+import { completedCount, recordCompletion } from "@/lib/first-session";
 import { cn, formatClock, formatHz } from "@/lib/utils";
 import type { Protocol, TierId } from "@/lib/supabase/types";
 
@@ -69,6 +72,7 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
   const [starting, setStarting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [showFirstComplete, setShowFirstComplete] = useState(false);
 
   const playerRef = useRef<SessionPlayer | null>(null);
   const ambientRef = useRef<AmbientEngine | null>(null);
@@ -98,6 +102,18 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
   useEffect(() => {
     setMix(loadMix());
   }, []);
+
+  // Setup Defaults: pre-select the pad that matches the visitor's declared
+  // intent, so the player arrives already tuned. A Pro-only pad falls back to
+  // the free Deep Space rather than pre-selecting something the user can't use.
+  useEffect(() => {
+    const def = intentById(loadIntent());
+    if (!def) return;
+    const preset = AMBIENT_PRESETS.find((p) => p.id === def.pad);
+    const usable = preset && (preset.free || isPro) ? def.pad : "deep-space";
+    setAmbient(usable);
+    preloadAmbient(usable);
+  }, [isPro]);
 
   useEffect(() => {
     return () => {
@@ -161,6 +177,10 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
     player.onComplete = () => {
       void finishSession(totalSeconds);
       ambientRef.current?.stop();
+      // Success Moment on the very first completed session (this device).
+      const isFirst = completedCount() === 0;
+      recordCompletion();
+      if (isFirst) setShowFirstComplete(true);
     };
     playerRef.current = player;
 
@@ -256,6 +276,16 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
 
   return (
     <div className="space-y-4">
+      {showFirstComplete && (
+        <SessionCompleteMoment
+          title={protocol.name}
+          freqCount={protocol.frequencies.length}
+          durationSecs={state?.totalElapsed ?? totalSeconds}
+          signedIn={signedIn}
+          onClose={() => setShowFirstComplete(false)}
+        />
+      )}
+
       {/* ---------------- TRANSPORT ---------------- */}
       <div className="glass rim relative overflow-hidden p-6">
         {active && (

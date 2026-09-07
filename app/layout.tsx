@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Rajdhani, Orbitron, Outfit, JetBrains_Mono } from "next/font/google";
 import { TabBar } from "@/components/TabBar";
 import { Onboarding } from "@/components/Onboarding";
+import { IntentSync } from "@/components/IntentSync";
 import "./globals.css";
 import { siteUrl } from "@/lib/site";
 
@@ -92,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="field-grain" aria-hidden />
         <main className="pb-tabs mx-auto w-full max-w-[520px] lg:max-w-3xl">{children}</main>
         <Onboarding />
+        <IntentSync />
         <TabBar />
       </body>
     </html>
