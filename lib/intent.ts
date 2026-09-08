@@ -30,7 +30,7 @@ export type IntentDef = {
   match: string[];
   /** Curated protocol slugs to feature first, in order. */
   slugs: string[];
-  /** Pad pre-selected on the player. Deep Space is the only free pad. */
+  /** Pad pre-selected on the player. All pads are available on every plan. */
   pad: AmbientPresetId;
 };
 

@@ -20,12 +20,12 @@ export const TIERS: Tier[] = [
     monthly: 0,
     yearly: 0,
     sessionsPerMonth: 10,
-    ambientPresets: 1,
+    ambientPresets: 5,
     features: [
       "All 1,395 CAFL protocols",
       "22 standalone tones",
       "10 sessions per month",
-      "1 ambient soundscape",
+      "All 5 synth pad soundscapes",
       "Binaural and isochronic playback",
     ],
   },
@@ -40,7 +40,6 @@ export const TIERS: Tier[] = [
     features: [
       "Everything in Free",
       "Unlimited sessions",
-      "All 5 ambient soundscapes",
       "Grounding, Clearing and Lock-In phases",
       "Offline WAV session downloads",
       "Custom frequency duration",
@@ -73,6 +72,7 @@ export function tierRank(t: TierId): number {
 
 export function canUse(tier: TierId, feature: "ambient" | "phases" | "download" | "history"): boolean {
   const r = tierRank(tier);
+  if (feature === "ambient") return true;
   if (feature === "history") return r >= 2;
   return r >= 1;
 }

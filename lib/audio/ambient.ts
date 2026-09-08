@@ -22,7 +22,7 @@ export type AmbientPreset = {
   id: AmbientPresetId;
   name: string;
   description: string;
-  /** true = available on the free tier */
+  /** true = available on the free tier. All pads are free as of Sept 2026. */
   free: boolean;
   accent: string;
   /** per-track trim on top of the engine level, 1 = as mastered */
@@ -42,7 +42,7 @@ export const AMBIENT_PRESETS: AmbientPreset[] = [
     id: "ocean-drift",
     name: "Ocean Drift",
     description: "Warm rounded pad with slow tidal swells",
-    free: false,
+    free: true,
     accent: "#38bdf8",
     gain: 1,
   },
@@ -50,7 +50,7 @@ export const AMBIENT_PRESETS: AmbientPreset[] = [
     id: "crystal-cavern",
     name: "Crystal Cavern",
     description: "Glassy sustained pad, shimmering highs, long tails",
-    free: false,
+    free: true,
     accent: "#a78bfa",
     gain: 1,
   },
@@ -58,7 +58,7 @@ export const AMBIENT_PRESETS: AmbientPreset[] = [
     id: "forest-dawn",
     name: "Forest Dawn",
     description: "Airy bright pad, gentle chords opening like daylight",
-    free: false,
+    free: true,
     accent: "#4ade80",
     gain: 1,
   },
@@ -66,7 +66,7 @@ export const AMBIENT_PRESETS: AmbientPreset[] = [
     id: "aurora",
     name: "Aurora",
     description: "Iridescent wide pad rising and falling in slow waves",
-    free: false,
+    free: true,
     accent: "#f472b6",
     gain: 1,
   },

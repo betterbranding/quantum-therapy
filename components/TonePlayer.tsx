@@ -84,14 +84,12 @@ export function TonePlayer({ tone }: { tone: Tone }) {
 
   // Setup Defaults: the pad is ON by default so the first play arrives already
   // scored, not silent. If the visitor declared an intent we tune to its pad;
-  // otherwise everyone still gets the free Deep Space. Only free pads are
-  // auto-applied here, since a tone viewer's tier is not read on this statically
-  // generated page. Once the listener touches the pad control, we stop overriding.
+  // otherwise everyone gets Deep Space. Every pad is available on every plan.
+  // Once the listener touches the pad control, we stop overriding.
   useEffect(() => {
     if (padTouchedRef.current) return;
     const def = intentById(loadIntent());
-    const preset = def ? AMBIENT_PRESETS.find((p) => p.id === def.pad) : undefined;
-    const usable = def && preset && preset.free ? def.pad : "deep-space";
+    const usable: AmbientPresetId = def?.pad ?? "deep-space";
     setAmbient(usable);
     preloadAmbient(usable);
   }, []);

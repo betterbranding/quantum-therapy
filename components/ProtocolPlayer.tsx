@@ -108,17 +108,15 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
 
   // Setup Defaults: the pad is ON by default so the first play arrives already
   // scored, not silent. If the visitor declared an intent, we tune to its pad;
-  // otherwise everyone still gets the free Deep Space. A Pro-only pad falls back
-  // to Deep Space rather than pre-selecting something the user can't use. Once
-  // the listener touches the pad control themselves, we stop overriding them.
+  // otherwise everyone gets Deep Space. Every pad is available on every plan.
+  // Once the listener touches the pad control themselves, we stop overriding them.
   useEffect(() => {
     if (padTouchedRef.current) return;
     const def = intentById(loadIntent());
-    const preset = def ? AMBIENT_PRESETS.find((p) => p.id === def.pad) : undefined;
-    const usable = def && preset && (preset.free || isPro) ? def.pad : "deep-space";
+    const usable: AmbientPresetId = def?.pad ?? "deep-space";
     setAmbient(usable);
     preloadAmbient(usable);
-  }, [isPro]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -238,11 +236,6 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
   };
 
   const chooseAmbient = (id: AmbientPresetId) => {
-    const preset = AMBIENT_PRESETS.find((p) => p.id === id);
-    if (preset && !preset.free && !isPro) {
-      setNotice("That soundscape is part of Pro. Deep Space is available on every plan.");
-      return;
-    }
     padTouchedRef.current = true;
     const next = ambient === id ? null : id;
     setAmbient(next);
@@ -460,13 +453,10 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
             <span className="text-[0.62rem] text-cyan">Loading pad</span>
           ) : ambientStatus === "error" ? (
             <span className="text-[0.62rem] text-ink-faint">Pad unavailable offline</span>
-          ) : (
-            !isPro && <span className="text-[0.62rem] text-ink-faint">1 of 5 on Free</span>
-          )}
+          ) : null}
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {AMBIENT_PRESETS.map((p) => {
-            const locked = !p.free && !isPro;
             const on = ambient === p.id;
             return (
               <button
@@ -477,7 +467,6 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
                   on
                     ? "border-cyan/60 bg-cyan/12"
                     : "border-hairline/70 bg-deep/50 hover:border-cyan/35",
-                  locked && "opacity-55",
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -485,11 +474,7 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
                     className="size-2 rounded-full"
                     style={{ background: p.accent, boxShadow: `0 0 10px ${p.accent}` }}
                   />
-                  {locked ? (
-                    <Lock className="size-3 text-ink-faint" />
-                  ) : on ? (
-                    <Check className="size-3 text-cyan" />
-                  ) : null}
+                  {on ? <Check className="size-3 text-cyan" /> : null}
                 </div>
                 <div className="mt-2 text-[0.8rem] font-medium text-ink">{p.name}</div>
                 <div className="mt-0.5 text-[0.65rem] leading-snug text-ink-faint">
