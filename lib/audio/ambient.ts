@@ -1,8 +1,12 @@
 /**
  * Synth pad bed engine.
  *
- * Five generated ambient synth pad tracks (ElevenLabs Music, post-processed
- * into seamless 147 s loops, normalised to -18 LUFS) served from /public/music.
+ * Eleven generated ambient synth pad tracks (ElevenLabs Music, post-processed
+ * into seamless loops, normalised to -18 LUFS) served from /public/music.
+ *
+ * Core collection: five 147 s loops at 128 kbps, free on every plan.
+ * Signature Series: six 241 s loops at 160 kbps, Pro and Premium only. Longer
+ * loops mean the repeat is far less perceptible over a long session.
  *
  * Playback runs on the same global AudioContext as the binaural engine, which
  * matters on iOS: one context, one unlock, one audio session. Each track is
@@ -16,14 +20,31 @@
 
 import { getAudioContext } from "./engine";
 
-export type AmbientPresetId = "deep-space" | "ocean-drift" | "crystal-cavern" | "forest-dawn" | "aurora";
+export type AmbientPresetId =
+  // Core collection, free on every plan
+  | "deep-space"
+  | "ocean-drift"
+  | "crystal-cavern"
+  | "forest-dawn"
+  | "aurora"
+  // Signature Series, Pro and Premium only
+  | "obsidian"
+  | "golden-hour"
+  | "sanctum"
+  | "nocturne"
+  | "stratosphere"
+  | "ember-tide";
+
+export type AmbientCollection = "core" | "signature";
 
 export type AmbientPreset = {
   id: AmbientPresetId;
   name: string;
   description: string;
-  /** true = available on the free tier. All pads are free as of Sept 2026. */
+  /** true = available on the free tier. The whole core collection is free. */
   free: boolean;
+  /** Which shelf the pad sits on in the picker. */
+  collection: AmbientCollection;
   accent: string;
   /** per-track trim on top of the engine level, 1 = as mastered */
   gain: number;
@@ -35,6 +56,7 @@ export const AMBIENT_PRESETS: AmbientPreset[] = [
     name: "Deep Space",
     description: "Dark analog pad, sub-heavy, slow harmonic drift",
     free: true,
+    collection: "core",
     accent: "#22d3ee",
     gain: 1,
   },
@@ -43,6 +65,7 @@ export const AMBIENT_PRESETS: AmbientPreset[] = [
     name: "Ocean Drift",
     description: "Warm rounded pad with slow tidal swells",
     free: true,
+    collection: "core",
     accent: "#38bdf8",
     gain: 1,
   },
@@ -51,6 +74,7 @@ export const AMBIENT_PRESETS: AmbientPreset[] = [
     name: "Crystal Cavern",
     description: "Glassy sustained pad, shimmering highs, long tails",
     free: true,
+    collection: "core",
     accent: "#a78bfa",
     gain: 1,
   },
@@ -59,6 +83,7 @@ export const AMBIENT_PRESETS: AmbientPreset[] = [
     name: "Forest Dawn",
     description: "Airy bright pad, gentle chords opening like daylight",
     free: true,
+    collection: "core",
     accent: "#4ade80",
     gain: 1,
   },
@@ -67,10 +92,80 @@ export const AMBIENT_PRESETS: AmbientPreset[] = [
     name: "Aurora",
     description: "Iridescent wide pad rising and falling in slow waves",
     free: true,
+    collection: "core",
     accent: "#f472b6",
     gain: 1,
   },
+  {
+    id: "obsidian",
+    name: "Obsidian",
+    description: "Velvet cinematic depth, low bowed strings fused into dark analog",
+    free: false,
+    collection: "signature",
+    accent: "#94a3b8",
+    gain: 1,
+  },
+  {
+    id: "golden-hour",
+    name: "Golden Hour",
+    description: "Tape-warm analog glow, honeyed and nostalgic",
+    free: false,
+    collection: "signature",
+    accent: "#fbbf24",
+    gain: 1,
+  },
+  {
+    id: "sanctum",
+    name: "Sanctum",
+    description: "Vast sacred space, organ-like layers in cathedral reverb",
+    free: false,
+    collection: "signature",
+    accent: "#c4b5fd",
+    gain: 1,
+  },
+  {
+    id: "nocturne",
+    name: "Nocturne",
+    description: "Dusky felt textures, intimate and hushed as midnight",
+    free: false,
+    collection: "signature",
+    accent: "#818cf8",
+    gain: 1,
+  },
+  {
+    id: "stratosphere",
+    name: "Stratosphere",
+    description: "Ultra-wide high-altitude air, crystalline and still",
+    free: false,
+    collection: "signature",
+    accent: "#67e8f9",
+    gain: 1,
+  },
+  {
+    id: "ember-tide",
+    name: "Ember Tide",
+    description: "Smouldering amber warmth breathing under a slow tide",
+    free: false,
+    collection: "signature",
+    accent: "#fb923c",
+    gain: 1,
+  },
 ];
+
+/** Pads on the free plan. */
+export const CORE_PRESETS = AMBIENT_PRESETS.filter((p) => p.collection === "core");
+/** The Pro-only Signature Series: longer, richer, higher-bitrate renders. */
+export const SIGNATURE_PRESETS = AMBIENT_PRESETS.filter((p) => p.collection === "signature");
+
+export function presetById(id: AmbientPresetId): AmbientPreset | undefined {
+  return AMBIENT_PRESETS.find((p) => p.id === id);
+}
+
+/** A pad is playable if it is free, or the listener is on a paid plan. */
+export function canPlayPreset(id: AmbientPresetId, isPro: boolean): boolean {
+  const p = presetById(id);
+  return Boolean(p && (p.free || isPro));
+}
 
 export type AmbientStatus = "idle" | "loading" | "playing" | "error";
 

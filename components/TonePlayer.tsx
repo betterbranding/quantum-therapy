@@ -12,7 +12,14 @@ import {
   BLOCKED_NOTICE,
   type PlayerState,
 } from "@/lib/audio/engine";
-import { AmbientEngine, AMBIENT_PRESETS, preloadAmbient, type AmbientPresetId } from "@/lib/audio/ambient";
+import {
+  AmbientEngine,
+  canPlayPreset,
+  preloadAmbient,
+  type AmbientPresetId,
+  type AmbientStatus,
+} from "@/lib/audio/ambient";
+import { PadPicker } from "@/components/PadPicker";
 import { unlockIOSAudio, setMediaSession } from "@/lib/audio/iosUnlock";
 import { SessionCompleteMoment } from "@/components/SessionCompleteMoment";
 import { loadIntent, intentById } from "@/lib/intent";
@@ -32,6 +39,8 @@ export function TonePlayer({ tone }: { tone: Tone }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [showFirstComplete, setShowFirstComplete] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [isPro, setIsPro] = useState(false);
+  const [ambientStatus, setAmbientStatus] = useState<AmbientStatus>("idle");
 
   const playerRef = useRef<SessionPlayer | null>(null);
   const ambientRef = useRef<AmbientEngine | null>(null);
@@ -84,25 +93,37 @@ export function TonePlayer({ tone }: { tone: Tone }) {
 
   // Setup Defaults: the pad is ON by default so the first play arrives already
   // scored, not silent. If the visitor declared an intent we tune to its pad;
-  // otherwise everyone gets Deep Space. Every pad is available on every plan.
+  // otherwise everyone gets Deep Space, falling back if their pad needs Pro.
   // Once the listener touches the pad control, we stop overriding.
   useEffect(() => {
     if (padTouchedRef.current) return;
     const def = intentById(loadIntent());
-    const usable: AmbientPresetId = def?.pad ?? "deep-space";
+    const wanted: AmbientPresetId = def?.pad ?? "deep-space";
+    const usable: AmbientPresetId = canPlayPreset(wanted, isPro) ? wanted : "deep-space";
     setAmbient(usable);
     preloadAmbient(usable);
-  }, []);
+  }, [isPro]);
 
   // Lightweight signed-in check, so the Success Moment shows the right CTA
   // without turning this page into a dynamic (non-static) route.
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
     let active = true;
-    createClient()
-      .auth.getUser()
-      .then(({ data }) => {
-        if (active) setSignedIn(Boolean(data.user));
+    const supabase = createClient();
+    supabase.auth
+      .getUser()
+      .then(async ({ data }) => {
+        if (!active || !data.user) return;
+        setSignedIn(true);
+        // Tier decides whether the Signature Series is playable. Read it here
+        // rather than on the server so this route stays statically generated.
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("subscription_tier")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        const tier = (profile as { subscription_tier?: string } | null)?.subscription_tier;
+        if (active) setIsPro(tier === "pro" || tier === "premium");
       })
       .catch(() => {});
     return () => {
@@ -118,6 +139,18 @@ export function TonePlayer({ tone }: { tone: Tone }) {
   const changeMix = (next: Mix) => {
     setMix(next);
     saveMix(next);
+  };
+
+  const chooseAmbient = (next: AmbientPresetId | null) => {
+    padTouchedRef.current = true;
+    setAmbient(next);
+    if (next) preloadAmbient(next);
+    if (!state?.isPlaying) return;
+    const amb = ambientRef.current ?? new AmbientEngine(mix.pad);
+    amb.onStatus = setAmbientStatus;
+    ambientRef.current = amb;
+    if (next) void amb.play(next);
+    else amb.stop();
   };
 
   const toggle = async () => {
@@ -136,6 +169,7 @@ export function TonePlayer({ tone }: { tone: Tone }) {
     setMediaSession(tone.name);
     if (ambient) {
       if (!ambientRef.current) ambientRef.current = new AmbientEngine(mix.pad);
+      ambientRef.current.onStatus = setAmbientStatus;
       await ambientRef.current.play(ambient);
     }
     if (state && state.totalElapsed > 0 && state.totalElapsed < state.totalDuration) {
@@ -244,45 +278,16 @@ export function TonePlayer({ tone }: { tone: Tone }) {
 
       <MixPanel className="mt-6" mix={mix} onChange={changeMix} padActive={ambient !== null} />
 
-      <div className="mt-6">
-        <p className="t-label">Synth pad bed</p>
-        <div className="mt-3 grid grid-cols-2 gap-2.5">
-          <button
-            onClick={() => {
-              padTouchedRef.current = true;
-              setAmbient(null);
-            }}
-            className="glass glass-hover p-3 text-left"
-            style={
-              ambient === null
-                ? { borderColor: "color-mix(in oklch, var(--color-cyan) 55%, transparent)" }
-                : undefined
-            }
-          >
-            <div className="text-[0.8rem] font-medium text-ink">None</div>
-            <div className="mt-0.5 text-[0.68rem] text-ink-faint">Tone only</div>
-          </button>
-          {AMBIENT_PRESETS.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => {
-                padTouchedRef.current = true;
-                setAmbient(p.id);
-                preloadAmbient(p.id);
-              }}
-              className="glass glass-hover p-3 text-left"
-              style={
-                ambient === p.id
-                  ? { borderColor: `color-mix(in oklch, ${p.accent} 60%, transparent)` }
-                  : undefined
-              }
-            >
-              <div className="text-[0.8rem] font-medium text-ink">{p.name}</div>
-              <div className="mt-0.5 text-[0.68rem] text-ink-faint">{p.description}</div>
-            </button>
-          ))}
-        </div>
-      </div>
+      <PadPicker
+        className="mt-6"
+        value={ambient}
+        onChange={chooseAmbient}
+        isPro={isPro}
+        status={ambientStatus}
+        onLocked={(preset) =>
+          setNotice(`${preset.name} is part of the Signature Series, included with Pro.`)
+        }
+      />
 
       {tone.benefits.length > 0 && (
         <div className="mt-6">

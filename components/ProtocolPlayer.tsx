@@ -27,11 +27,12 @@ import {
 } from "@/lib/audio/engine";
 import {
   AmbientEngine,
-  AMBIENT_PRESETS,
+  canPlayPreset,
   preloadAmbient,
   type AmbientPresetId,
   type AmbientStatus,
 } from "@/lib/audio/ambient";
+import { PadPicker } from "@/components/PadPicker";
 import { unlockIOSAudio, setMediaSession } from "@/lib/audio/iosUnlock";
 import { DEFAULT_MIX, loadMix, saveMix, type Mix } from "@/lib/audio/mix";
 import { MixPanel } from "@/components/MixPanel";
@@ -113,7 +114,8 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
   useEffect(() => {
     if (padTouchedRef.current) return;
     const def = intentById(loadIntent());
-    const usable: AmbientPresetId = def?.pad ?? "deep-space";
+    const wanted: AmbientPresetId = def?.pad ?? "deep-space";
+    const usable: AmbientPresetId = canPlayPreset(wanted, isPro) ? wanted : "deep-space";
     setAmbient(usable);
     preloadAmbient(usable);
   }, []);
@@ -235,9 +237,8 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
     ambientRef.current?.setLevel(next.pad);
   };
 
-  const chooseAmbient = (id: AmbientPresetId) => {
+  const chooseAmbient = (next: AmbientPresetId | null) => {
     padTouchedRef.current = true;
-    const next = ambient === id ? null : id;
     setAmbient(next);
     if (next) preloadAmbient(next);
     if (!playerRef.current || !state?.isPlaying) return;
@@ -446,45 +447,16 @@ export function ProtocolPlayer({ protocol, tier, signedIn }: Props) {
       </div>
 
       {/* ---------------- AMBIENT ---------------- */}
-      <div className="glass p-4">
-        <div className="flex items-center justify-between">
-          <p className="t-label">Synth pad bed</p>
-          {ambientStatus === "loading" ? (
-            <span className="text-[0.62rem] text-cyan">Loading pad</span>
-          ) : ambientStatus === "error" ? (
-            <span className="text-[0.62rem] text-ink-faint">Pad unavailable offline</span>
-          ) : null}
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {AMBIENT_PRESETS.map((p) => {
-            const on = ambient === p.id;
-            return (
-              <button
-                key={p.id}
-                onClick={() => chooseAmbient(p.id)}
-                className={cn(
-                  "relative rounded-2xl border p-3 text-left transition-all duration-300",
-                  on
-                    ? "border-cyan/60 bg-cyan/12"
-                    : "border-hairline/70 bg-deep/50 hover:border-cyan/35",
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <span
-                    className="size-2 rounded-full"
-                    style={{ background: p.accent, boxShadow: `0 0 10px ${p.accent}` }}
-                  />
-                  {on ? <Check className="size-3 text-cyan" /> : null}
-                </div>
-                <div className="mt-2 text-[0.8rem] font-medium text-ink">{p.name}</div>
-                <div className="mt-0.5 text-[0.65rem] leading-snug text-ink-faint">
-                  {p.description}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <PadPicker
+        className="glass p-4"
+        value={ambient}
+        onChange={chooseAmbient}
+        isPro={isPro}
+        status={ambientStatus}
+        onLocked={(preset) =>
+          setNotice(`${preset.name} is part of the Signature Series, included with Pro.`)
+        }
+      />
 
       {/* ---------------- PHASES ---------------- */}
       <div className="glass p-4">
